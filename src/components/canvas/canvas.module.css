@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+.container {
+    @apply h-screen w-screen bg-gray-300;
+}
+.canvas {
+    @apply bg-gray-100 border border-gray-300 rounded-xl h-full w-full;
+}
