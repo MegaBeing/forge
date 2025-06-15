@@ -1,6 +1,5 @@
 import { Layer, Stage, Rect } from 'react-konva';
 import styles from './canvas.module.css';
-import Toolbar from '../toolbar';
 import { useRef, useState } from 'react';
 import Konva from 'konva';
 import { handleZoom } from './utils';
@@ -40,7 +39,6 @@ export default function Canvas() {
   return (
     <div className={styles.container}>
       <div className={styles.canvas}>
-        <Toolbar />
         <Stage
           width={window.innerWidth}
           height={window.innerHeight}

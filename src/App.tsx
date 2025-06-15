@@ -1,9 +1,9 @@
-import Canvas from './components/canvas';
+import Container from './components/container';
 
 const App = () => {
   return (
-    <Canvas/>
-  );
+    <Container/>
+  )
 };
 
 export default App;

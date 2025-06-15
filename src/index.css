@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
-.app {
-  @apply flex flex-col items-center justify-center min-h-screen bg-gray-100;
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* optional: prevents scrollbars */
+  height: 100%;
 }
+
 

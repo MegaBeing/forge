@@ -1,10 +1,13 @@
 @import 'tailwindcss';
 .container{
-    @apply bg-gray-300 p-2 absolute top-2 left-1/2 transform -translate-x-1/2 z-10;   
+    @apply bg-gray-200 absolute top-1/2 right-1 transform -translate-y-1/2 z-10 m-3 rounded-xl ;   
 }
 .toolbar {
-    @apply bg-gray-100 border border-gray-300 rounded-xl shadow-lg h-full w-full;
+    @apply  p-1 bg-gray-200 border border-gray-300 shadow-lg h-full w-full flex flex-col items-center justify-start rounded-xl;
 }
 .toolbarButton {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded inline-flex items-center;        
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 inline-flex items-center rounded-xl my-0.5;        
+}
+.toolbarButton.active {
+    @apply bg-gray-300;
 }
