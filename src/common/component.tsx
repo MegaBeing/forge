@@ -6,14 +6,14 @@ import { IToolbarComponent } from "@/types/components";
 export function Component({
   name = "Component",
   visible = true,
-  className = " border border-gray-300 bg-white size-10 cursor-pointer rounded-2xl",
+  className = " p-2 border border-gray-300 bg-white size-10 cursor-pointer rounded-2xl shadow-xl",
   icon = '/components/default.svg',
   activeIcon = '/components/default.svg',
 }: IToolbarComponent) {
   const dragRef = useRef<HTMLImageElement>(null);
   const dispatch = useAppDispatch();
+
   const onDragStart = (event: React.DragEvent<HTMLDivElement>) => {
-    console.log("Dragging", name);
     event.dataTransfer.setData(
       "application/component",
       JSON.stringify({ name, visible, icon })
@@ -42,12 +42,14 @@ export function Component({
     });
     dispatch(setComponent(true));
   }
+
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault(); // REQUIRED
   };
+
   return (
-    <div className={className} 
-    onDragStart={onDragStart} 
+    <div className={className}
+    onDragStart={onDragStart}
     onDragOver={onDragOver}
     draggable
     >
@@ -55,10 +57,10 @@ export function Component({
         <img src={icon} alt={name} ref={dragRef}/>
 
         <div
-          className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2
-                rounded bg-gray-900 px-2 py-1 text-xs text-white
+          className="absolute -bottom-full left-1/2 mb-2 -translate-x-1/2 translate-y-8
+                rounded bg-gray-100 px-2 py-1 text-xs text-gray-800 shadow-xl font-mono
                 opacity-0 transition-opacity duration-200
-                group-hover:opacity-100 pointer-events-none whitespace-nowrap"
+                group-hover:opacity-100 pointer-events-none whitespace-nowrap "
         >
           {name}
         </div>

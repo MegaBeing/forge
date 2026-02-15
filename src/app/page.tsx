@@ -20,7 +20,7 @@ function Home() {
       {/* <div className="absolute top-1/3 right-0">
       <ToolBar />
     </div> */}
-      <div className="absolute bottom-10 right-1/2 translate-x-1/2">
+      <div className="absolute bottom-15 right-1/2 translate-x-1/2">
         <ComponentToolbar />
       </div>
     </>
