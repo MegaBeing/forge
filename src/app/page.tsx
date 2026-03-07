@@ -1,28 +1,15 @@
 "use client";
-import { ComponentToolbar } from "@/app/componentsToolbar";
-import CanvasStage from "./canvas";
-import { ToolBar } from "./_toolbar";
-import { Provider } from "react-redux";
-import store from "@/lib/store";
 
-export default function App() {
-  return (
-    <Provider store={store}>
-      <Home />
-    </Provider>
-  );
-}
+import dynamic from "next/dynamic";
 
-function Home() {
+const FlowCanvas = dynamic(() => import("@/FlowCanvas"), {
+  ssr: false,
+});
+
+export default function CanvasPage() {
   return (
-    <>
-      <CanvasStage />
-      {/* <div className="absolute top-1/3 right-0">
-      <ToolBar />
-    </div> */}
-      <div className="absolute bottom-15 right-1/2 translate-x-1/2">
-        <ComponentToolbar />
-      </div>
-    </>
+    <main className="w-screen h-screen overflow-hidden bg-[#ffffff]">
+      <FlowCanvas />
+    </main>
   );
 }
