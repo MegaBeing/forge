@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Konva Flow Canvas — Setup Guide
 
-## Getting Started
-
-First, run the development server:
+## 1. Install dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install konva react-konva
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> **Note**: `react-konva` requires `konva` as a peer dependency.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 2. File structure
 
-## Learn More
+Place the files in your Next.js project like this:
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/
+    canvas/
+      page.tsx          ← canvas-page.tsx (rename)
+  components/
+    FlowCanvas.tsx
+    Toolbar.tsx
+    constants.ts
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 3. Add JetBrains Mono font (optional but recommended)
 
-## Deploy on Vercel
+In your `app/layout.tsx` or `globals.css`:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```css
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 4. Tailwind config
+
+Make sure your `tailwind.config.ts` includes the `src/components` path in `content`:
+
+```ts
+content: [
+  "./src/**/*.{js,ts,jsx,tsx,mdx}",
+]
+```
+
+---
+
+## 5. Usage
+
+Navigate to `/canvas` in your app.
+
+### Toolbar actions:
+| Tool | Action |
+|------|--------|
+| ⚙ PROCESS | Click canvas to place a Process node |
+| ◆ DECISION | Click canvas to place a Decision node |
+| ⬡ DATA | Click canvas to place a Data node |
+| → STRAIGHT | Click port → click another port to connect with straight line |
+| ⤳ CURVED | Click port → click another port to connect with bezier curve |
+| ✕ DELETE | Deletes selected node or connector |
+
+### Keyboard shortcuts:
+- `Delete` / `Backspace` — delete selected element
+- `Escape` — cancel current tool / drawing
+
+### Interaction:
+- **Drag** nodes to reposition them (connectors follow automatically)
+- **Click** a node or connector to select it
+- Ports (●) appear on nodes when a connector tool is active
