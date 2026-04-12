@@ -9,6 +9,10 @@ import { NodeType } from "@/Utils/types";
 import Components from "@/Components";
 import { getPortPosition, buildLinePath } from "./Utils/functions";
 import { ConnectorType } from "./Utils/types";
+import { TextInput } from "@/Common/TextInput";
+import Slider from "@/Common/Slider";
+import Switch from "@/Common/Switch";
+import Select from "@/Common/Select";
 
 let nodeIdCounter = 1;
 let connectorIdCounter = 1;
@@ -36,7 +40,7 @@ export default function FlowCanvas() {
   const handleStageClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       // Only if clicking empty stage
-      if (e.target !== e.target.getStage() && e.target.getParent()?.getParent() !== e.target.getStage()?.findOne("Layer")) {
+      if (e.target !== e.target.getStage() && e.target.getParent()?.getParent() !== e.target.getStage()?.findOne("Layer") && e.target.id.name !== "config-canvas") {
         // Deselect
         if (!selectedTool) {
           setSelectedNodeId(null);
@@ -135,6 +139,8 @@ export default function FlowCanvas() {
     }
   }, [selectedNodeId, selectedConnectorId]);
 
+  //TODO: there should ideally be a function where we can create a list of config for a particular node
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Delete" || e.key === "Backspace") handleDeleteSelected();
@@ -182,6 +188,16 @@ export default function FlowCanvas() {
               ? "Click on canvas to place component"
               : "Select a tool from the toolbar"}
       </div>
+
+      {/* Configuration panel */}
+      {/* {(
+        <div className="absolute top-5 left-5 bg-white p-4 shadow-lg rounded-lg z-10 flex w-80 h-80 flex-col items-center justify-start">
+          <TextInput/>
+          <Slider/>
+          <Switch/>
+          <Select/>
+        </div>
+      )} */}
 
       <Stage
         ref={stageRef}

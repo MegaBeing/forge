@@ -1,0 +1,58 @@
+@reference "tailwindcss";
+
+.form button {
+  @apply border-none bg-transparent text-[#8b8ba7];
+}
+/* styling of whole input container */
+.form {
+  --timing: 0.3s;
+  --width-of-input: 200px;
+  --height-of-input: 40px;
+  --border-height: 2px;
+  --input-bg: #fff;
+  --border-color: #2f2ee9;
+  --border-radius: 30px;
+  --after-border-radius: 1px;
+  @apply relative flex items-center px-[0.8em] transition-[border-radius] duration-500 ease-in-out;
+  width: var(--width-of-input);
+  height: var(--height-of-input);
+  border-radius: var(--border-radius);
+  background: var(--input-bg,#fff);
+}
+/* styling of Input */
+.input {
+  @apply text-[0.9rem] bg-transparent w-full h-full px-[0.5em] py-[0.7em] border-none;
+}
+/* styling of animated border */
+.form:before {
+  content: "";
+  @apply absolute scale-x-0 origin-center w-full left-0 bottom-0 rounded-[1px];
+  background: var(--border-color);
+  height: var(--border-height);
+  transition: transform var(--timing) ease;
+}
+/* Hover on Input */
+.form:focus-within {
+  border-radius: var(--after-border-radius);
+}
+
+input:focus {
+  @apply outline-none;
+}
+/* here is code of animated border */
+.form:focus-within:before {
+  @apply scale-100;
+}
+/* styling of close button */
+/* == you can click the close button to remove text == */
+.reset {
+  @apply border-none bg-transparent opacity-0 invisible;
+}
+/* close button shown when typing */
+input:not(:placeholder-shown) ~ .reset {
+  @apply opacity-100 visible;
+}
+/* sizing svg icons */
+.form svg {
+  @apply w-[17px] mt-[3px];
+}
