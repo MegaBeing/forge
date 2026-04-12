@@ -1,0 +1,71 @@
+@reference "tailwindcss";
+
+.container {
+  --active-color: #1868e3;
+  --inactive-color: #d3d3d6;
+  @apply relative aspect-[292/142] h-[1.875em];
+}
+
+.input {
+  @apply appearance-none m-0 absolute z-[1] top-0 left-0 w-full h-full cursor-pointer;
+}
+
+.toggle {
+  @apply w-full h-full overflow-visible;
+}
+
+.background {
+  @apply fill-[#d3d3d6] transition-[fill] duration-[0.4s];
+}
+
+.input:checked + .toggle .background {
+  @apply fill-[#1868e3];
+}
+
+.circleCenter {
+  @apply origin-center transition-transform duration-[0.6s];
+}
+
+.input:checked + .toggle .circleCenter {
+  @apply translate-x-[150px];
+}
+
+.circle {
+  @apply origin-center transition-transform duration-[0.45s] backface-hidden;
+}
+
+.circle.left {
+  @apply scale-100;
+}
+
+.input:checked + .toggle .circle.left {
+  @apply scale-0;
+}
+
+.circle.right {
+  @apply scale-0;
+}
+
+.input:checked + .toggle .circle.right {
+  @apply scale-100;
+}
+
+.icon {
+  @apply transition-[fill] duration-[0.4s];
+}
+
+.icon.on {
+  @apply fill-[#d3d3d6];
+}
+
+.input:checked + .toggle .icon.on {
+  @apply fill-white;
+}
+
+.icon.off {
+  @apply fill-[#eaeaec];
+}
+
+.input:checked + .toggle .icon.off {
+  @apply fill-[#1868e3];
+}

@@ -1,0 +1,27 @@
+@reference "tailwindcss";
+
+.slider {
+  @apply w-full h-1 rounded bg-[#D5DBE1] outline-none opacity-70 transition-opacity duration-200;
+  -webkit-appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  @apply appearance-none w-[15px] h-[15px] rounded-full bg-black cursor-pointer transition-all duration-300 ease-in-out;
+  -webkit-appearance: none;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  @apply shadow-[0px_0px_0px_8px_rgba(0,0,0,0.16)] transition-all duration-300 ease-in-out;
+}
+
+.slider::-moz-range-thumb {
+  @apply w-[15px] h-[15px] rounded-full bg-black cursor-pointer;
+}
+
+.sliderDiv {
+  @apply flex items-center justify-center gap-4 p-4;
+}
+
+.sliderValue {
+  @apply font-semibold;
+}
