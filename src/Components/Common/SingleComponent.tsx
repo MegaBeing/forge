@@ -1,9 +1,9 @@
-import { NodeType } from "@/Utils/types";
+import { Node } from "@/Utils/types";
 import Konva from "konva";
 import { Group, Rect, Circle, Text } from "react-konva";
 
 interface IProps {
-  node: NodeType;
+  node: Node;
   isConnectorTool: boolean;
   isSelected: boolean;
   colors: {

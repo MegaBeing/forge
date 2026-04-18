@@ -1,14 +1,13 @@
 "use client";
-import { NodeType } from "@/Utils/types";
+import { Node, NodeType } from "@/Utils/types";
 import Konva from "konva";
 import { Layer, Group, Rect, Circle, Text } from "react-konva";
 
 interface IProps {
-  nodes: NodeType[];
+  nodes: Node[];
   selectedNodeId: string | null;
   isConnectorTool: boolean;
-  setSelectedNodeId: (id: string | null) => void;
-  setSelectedConnectorId: (id: string | null) => void;
+  handleArrowClick: (e: Konva.KonvaEventObject<MouseEvent>, id: string, nodeType: NodeType) => void;
   handleNodeDrag: (id: string, x: number, y: number) => void;
   handlePortClick: (nodeId: string, portPosition: "right" | "bottom") => void;
 }
@@ -16,8 +15,7 @@ export default function Components({
   nodes,
   selectedNodeId,
   isConnectorTool,
-  setSelectedNodeId,
-  setSelectedConnectorId,
+  handleArrowClick,
   handleNodeDrag,
   handlePortClick,
 }: IProps) {
@@ -26,7 +24,7 @@ export default function Components({
       {nodes.map((node) => {
         const colors = node.colors;
         const isSelected = node.id === selectedNodeId;
-        const showPorts = isConnectorTool;
+        const showPorts = isConnectorTool // Show ports only when connector tool is active and node is selected
 
         return (
           <Group
@@ -37,13 +35,7 @@ export default function Components({
             onDragMove={(e) => {
               handleNodeDrag(node.id, e.target.x(), e.target.y());
             }}
-            onClick={(e) => {
-              e.cancelBubble = true;
-              if (!isConnectorTool) {
-                setSelectedNodeId(node.id);
-                setSelectedConnectorId(null);
-              }
-            }}
+            onClick={(e) => handleArrowClick(e, node.id, NodeType.COMPONENT)}
           >
             {/* Glow */}
             {isSelected && (

@@ -1,6 +1,6 @@
-import { NodeType } from "@/Utils/types";
+import { Node } from "@/Utils/types";
 
-export function getPortPosition(node: NodeType, port: string) {
+export function getPortPosition(node: Node, port: string) {
   switch (port) {
     case "right":
       return { x: node.x + node.width, y: node.y + node.height / 2 };
