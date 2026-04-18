@@ -2,8 +2,14 @@
 import { COMPONENT_TYPES, CONNECTOR_TYPES } from "@/Utils/constants";
 import { NODE_ICONS, CONNECTOR_ICONS } from "./Utils/constants";
 import { ToolbarProps } from "./Utils/types";
+import { NodeType } from "@/Utils/types";
 
-export default function Toolbar({ selectedTool, onSelectTool, onDeleteSelected }: ToolbarProps) {
+export default function Toolbar({ 
+  selectedTool, 
+  componentSelected, 
+  onSelectTool, 
+  onDeleteSelected 
+}: ToolbarProps) {
   return (
     <div
       className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 px-3 py-2 rounded-2xl"
@@ -20,7 +26,7 @@ export default function Toolbar({ selectedTool, onSelectTool, onDeleteSelected }
       {COMPONENT_TYPES.map((comp) => (
         <button
           key={comp.id}
-          onClick={() => onSelectTool(comp.id)}
+          onClick={() => onSelectTool(comp.id, NodeType.COMPONENT)}
           title={comp.description}
           style={{
             display: "flex",
@@ -74,7 +80,7 @@ export default function Toolbar({ selectedTool, onSelectTool, onDeleteSelected }
       {CONNECTOR_TYPES.map((conn) => (
         <button
           key={conn.id}
-          onClick={() => onSelectTool(conn.id)}
+          onClick={() => onSelectTool(conn.id, NodeType.CONNECTOR)}
           title={conn.description}
           style={{
             display: "flex",
@@ -115,7 +121,7 @@ export default function Toolbar({ selectedTool, onSelectTool, onDeleteSelected }
       ))}
 
       {/* Divider + Delete */}
-      {onDeleteSelected && (
+      {componentSelected && (
         <>
           <div
             style={{

@@ -5,54 +5,34 @@ import Konva from "konva";
 import { Stage, Layer, Circle, Arrow } from "react-konva";
 import Toolbar from "../Toolbar";
 import { COMPONENT_TYPES, CONNECTOR_TYPES } from "@/Utils/constants";
-import { NodeType } from "@/Utils/types";
+import { Node } from "@/Utils/types";
 import Components from "@/Components";
 import { getPortPosition, buildLinePath } from "./Utils/functions";
-import { ConnectorType } from "./Utils/types";
-import { TextInput } from "@/Common/TextInput";
-import Slider from "@/Common/Slider";
-import Switch from "@/Common/Switch";
-import Select from "@/Common/Select";
+import { ConnectorType } from "@/Utils/types";
+import { NodeType } from "@/Utils/types";
 
 let nodeIdCounter = 1;
 let connectorIdCounter = 1;
 
-export default function FlowCanvas() {
+
+const useFlowCanvas = () => {
   const stageRef = useRef<Konva.Stage>(null);
-  const [nodes, setNodes] = useState<NodeType[]>([]);
+  const [nodes, setNodes] = useState<Node[]>([]);
   const [connectors, setConnectors] = useState<ConnectorType[]>([]);
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [selectedConnectorId, setSelectedConnectorId] = useState<string | null>(null);
+  const [selectedNodeType, setSelectedNodeType] = useState<NodeType | null>(null);
   const [drawingConnector, setDrawingConnector] = useState<ConnectorType | null>(null);
   const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
-
-  useEffect(() => {
-    function handleResize() {
-      setStageSize({ width: window.innerWidth, height: window.innerHeight });
-    }
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   // Place a node on canvas click when a component tool is active
-  const handleStageClick = useCallback(
+  const handleCanvasClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       // Only if clicking empty stage
-      if (e.target !== e.target.getStage() && e.target.getParent()?.getParent() !== e.target.getStage()?.findOne("Layer") && e.target.id.name !== "config-canvas") {
-        // Deselect
-        if (!selectedTool) {
-          setSelectedNodeId(null);
-          setSelectedConnectorId(null);
-        }
-        return;
-      }
 
       if (selectedTool && COMPONENT_TYPES.find((c) => c.id === selectedTool)) {
         const pos = e.target.getStage()!.getPointerPosition()!;
         const def = COMPONENT_TYPES.find((c) => c.id === selectedTool)!;
-        const newNode: NodeType = {
+        const newNode: Node = {
           id: `node-${nodeIdCounter++}`,
           x: pos.x - def.width / 2,
           y: pos.y - def.height / 2,
@@ -64,9 +44,9 @@ export default function FlowCanvas() {
         };
         setNodes((prev) => [...prev, newNode]);
         setSelectedTool(null);
-      } else if (!selectedTool) {
+      } else {
         setSelectedNodeId(null);
-        setSelectedConnectorId(null);
+        setSelectedNodeType(null);
       }
     },
     [selectedTool]
@@ -112,6 +92,7 @@ export default function FlowCanvas() {
             setConnectors((prev) => [...prev, completed]);
           }
           setDrawingConnector(null);
+          setSelectedNodeType(null);
           setSelectedTool(null);
         }
       }
@@ -124,22 +105,35 @@ export default function FlowCanvas() {
   }, []);
 
   const handleDeleteSelected = useCallback(() => {
-    if (selectedNodeId) {
-      setNodes((prev) => prev.filter((n) => n.id !== selectedNodeId));
-      setConnectors((prev) =>
-        prev.filter(
-          (c) => c.fromNodeId !== selectedNodeId && c.toNodeId !== selectedNodeId
-        )
-      );
-      setSelectedNodeId(null);
-    }
-    if (selectedConnectorId) {
-      setConnectors((prev) => prev.filter((c) => c.id !== selectedConnectorId));
-      setSelectedConnectorId(null);
-    }
-  }, [selectedNodeId, selectedConnectorId]);
+    if(!selectedNodeId) return; 
+    console.log(1, selectedNodeId, selectedNodeType)
+    switch(selectedNodeType) {
+      case NodeType.COMPONENT:
+        setNodes((prev) => prev.filter((n) => n.id !== selectedNodeId));
+        setConnectors((prev) =>
+          prev.filter(
+            (c) => c.fromNodeId !== selectedNodeId && c.toNodeId !== selectedNodeId
+          )
+        );
+        
+        break;
+      case NodeType.CONNECTOR:
+        setConnectors((prev) => prev.filter((c) => c.id !== selectedNodeId));
 
-  //TODO: there should ideally be a function where we can create a list of config for a particular node
+        break;
+      }
+      setSelectedNodeId(null);
+  }, [selectedNodeId, selectedNodeType]);
+
+
+  useEffect(() => {
+    function handleResize() {
+      setStageSize({ width: window.innerWidth, height: window.innerHeight });
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -153,21 +147,103 @@ export default function FlowCanvas() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [handleDeleteSelected]);
 
-  const isConnectorTool =
-    selectedTool && CONNECTOR_TYPES.find((c) => c.id === selectedTool);
+  //TODO: there should ideally be a function where we can create a list of config for a particular node
+  const isConnectorTool = selectedNodeType === NodeType.CONNECTOR
 
+  const selectTool = (id: string, nodeType: NodeType) => {
+    setSelectedTool((prev) => (prev === id ? null : id));
+    setSelectedNodeType(nodeType);
+    setDrawingConnector(null);
+  }
+
+  const helperStatements = () => {
+    return isConnectorTool && !drawingConnector
+          ? "Click a port (●) to start connecting"
+          : isConnectorTool && drawingConnector
+            ? "Click another port to complete the connection"
+            : selectedTool
+              ? "Click on canvas to place component"
+              : "Select a tool from the toolbar"
+  }
+
+  const cursorStyle = () => {
+    return isConnectorTool
+            ? "crosshair"
+            : selectedTool
+              ? "copy"
+              : "default"
+  }
+
+  const handleArrowClick = (e: Konva.KonvaEventObject<MouseEvent>, id: string, nodeType: NodeType ) => {
+    e.cancelBubble = true;
+    setSelectedNodeId(id);
+    setSelectedNodeType(nodeType);
+  }
+  return {
+    // refs
+    stageRef,
+    
+
+    // states
+    nodes,
+    connectors,
+    selectedNodeType, 
+    selectedNodeId,
+    selectedTool,
+    stageSize,
+    drawingConnector,
+
+
+    // functions
+    selectTool,
+    handleDeleteSelected,
+    helperStatements,
+    handleNodeInsertion: handleCanvasClick,
+    cursorStyle,
+    handleMouseMove,
+    handleArrowClick,
+    handleNodeDrag,
+    handlePortClick
+  }
+}
+
+export default function FlowCanvas() {
+  const {
+    // refs
+    stageRef,
+    
+
+    // states
+    nodes,
+    connectors,
+    selectedNodeType, 
+    selectedNodeId,
+    selectedTool,
+    stageSize,
+    drawingConnector,
+
+
+    // functions
+    selectTool,
+    handleDeleteSelected,
+    helperStatements,
+    handleNodeInsertion,
+    cursorStyle,
+    handleMouseMove,
+    handleArrowClick,
+    handleNodeDrag,
+    handlePortClick
+  } = useFlowCanvas();
+
+  const isConnectorTool = selectedNodeType === NodeType.CONNECTOR
   return (
     <div className="relative w-full h-full select-none">
       {/* Toolbar */}
       <Toolbar
         selectedTool={selectedTool}
-        onSelectTool={(id) => {
-          setSelectedTool((prev) => (prev === id ? null : id));
-          setDrawingConnector(null);
-        }}
-        onDeleteSelected={
-          selectedNodeId || selectedConnectorId ? handleDeleteSelected : undefined
-        }
+        componentSelected={selectedNodeId ? true : false}
+        onSelectTool={selectTool}
+        onDeleteSelected={handleDeleteSelected}
       />
 
       {/* Canvas cursor hint */}
@@ -180,13 +256,7 @@ export default function FlowCanvas() {
           letterSpacing: "0.1em",
         }}
       >
-        {isConnectorTool && !drawingConnector
-          ? "Click a port (●) to start connecting"
-          : isConnectorTool && drawingConnector
-            ? "Click another port to complete the connection"
-            : selectedTool
-              ? "Click on canvas to place component"
-              : "Select a tool from the toolbar"}
+        {helperStatements()}
       </div>
 
       {/* Configuration panel */}
@@ -203,14 +273,10 @@ export default function FlowCanvas() {
         ref={stageRef}
         width={stageSize.width}
         height={stageSize.height}
-        onClick={handleStageClick}
+        onClick={handleNodeInsertion}
         onMouseMove={handleMouseMove}
         style={{
-          cursor: isConnectorTool
-            ? "crosshair"
-            : selectedTool
-              ? "copy"
-              : "default",
+          cursor: cursorStyle(),
         }}
       >
         {/* Grid Layer */}
@@ -238,7 +304,7 @@ export default function FlowCanvas() {
             const from = getPortPosition(fromNode, conn.fromPort);
             const to = getPortPosition(toNode, conn.toPort);
             const pts = buildLinePath(from.x, from.y, to.x, to.y, conn.style);
-            const isSelected = conn.id === selectedConnectorId;
+            const isSelected = conn.id === selectedNodeId;
             return (
               <Arrow
                 key={conn.id}
@@ -249,11 +315,7 @@ export default function FlowCanvas() {
                 pointerLength={10}
                 pointerWidth={8}
                 tension={0}
-                onClick={(e) => {
-                  e.cancelBubble = true;
-                  setSelectedConnectorId(conn.id);
-                  setSelectedNodeId(null);
-                }}
+                onClick={(e) => handleArrowClick(e, conn.id, NodeType.CONNECTOR)}
                 shadowColor={isSelected ? "#f59e0b" : "#6c63ff"}
                 shadowBlur={isSelected ? 12 : 6}
                 shadowOpacity={0.5}
@@ -289,9 +351,8 @@ export default function FlowCanvas() {
         <Components
           nodes={nodes}
           selectedNodeId={selectedNodeId}
-          isConnectorTool={!!isConnectorTool}
-          setSelectedNodeId={setSelectedNodeId}
-          setSelectedConnectorId={setSelectedConnectorId}
+          isConnectorTool={isConnectorTool}
+          handleArrowClick={handleArrowClick}
           handleNodeDrag={handleNodeDrag}
           handlePortClick={handlePortClick}
         />

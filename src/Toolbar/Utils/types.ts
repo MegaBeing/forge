@@ -1,6 +1,11 @@
+import { NodeType } from "@/Utils/types";
 
 export type ToolbarProps = {
+  // values
   selectedTool: string | null;
-  onSelectTool: (id: string) => void;
-  onDeleteSelected?: () => void;
+  componentSelected: boolean;
+
+  // callbacks
+  onSelectTool: (id: string, nodeType: NodeType) => void;
+  onDeleteSelected: () => void;
 };
