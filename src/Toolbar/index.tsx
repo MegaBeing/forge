@@ -8,7 +8,7 @@ export default function Toolbar({
   selectedTool, 
   componentSelected, 
   onSelectTool, 
-  onDeleteSelected 
+  onDeleteSelected,
 }: ToolbarProps) {
   return (
     <div
@@ -61,8 +61,8 @@ export default function Toolbar({
             }
           }}
         >
-          <span style={{ fontSize: 16 }}>{NODE_ICONS[comp.id]}</span>
-          <span style={{ fontSize: 8, letterSpacing: "0.12em" }}>{comp.label}</span>
+          <span style={{ fontSize: 16 }}>{comp.icon}</span>
+          <span style={{ fontSize: 8, letterSpacing: "0.12em", marginTop: 2 }}>{comp.label}</span>
         </button>
       ))}
 

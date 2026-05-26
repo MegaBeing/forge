@@ -1,12 +1,15 @@
+import { JSX } from "react";
+
 export type Node = {
   id: string;
   x: number;
   y: number;
   type: string;
+  icon: JSX.Element
   label: string;
   width: number;
   height: number;
-  colors: { fill: string; stroke: string; icon: string; };
+  colors: { fill: string; stroke: string; };
 };
 
 export type ConnectorType = {

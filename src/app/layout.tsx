@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Flow Canvas",
-  description: "Konva.js flow canvas",
+  title: "Forge",
+  description: "A visual programming tool for everyone.",
 };
 
 export default function RootLayout({

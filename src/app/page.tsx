@@ -8,7 +8,7 @@ const FlowCanvas = dynamic(() => import("@/FlowCanvas"), {
 
 export default function CanvasPage() {
   return (
-    <main className="w-screen h-screen overflow-hidden bg-[#ffffff]">
+    <main className="w-screen h-screen overflow-hidden bg-[#313030]">
       <FlowCanvas />
     </main>
   );
