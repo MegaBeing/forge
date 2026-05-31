@@ -1,5 +1,5 @@
 .container {
-  width: 16rem;
+  width: 100%;
   position: relative;
 }
 
@@ -8,38 +8,42 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: white;
-  border: 1px solid #d1d5db;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.75rem;
   padding: 0.5rem 1rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  transition: border 0.2s;
+  transition: border 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
 .trigger:hover {
-  border-color: #9ca3af;
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(167, 159, 255, 0.55);
+  box-shadow: 0 0 18px rgba(108, 99, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .label {
-  color: #374151;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .icon {
   width: 16px;
   height: 16px;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .dropdown {
   position: absolute;
   margin-top: 0.5rem;
   width: 100%;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: rgba(14, 14, 18, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.75rem;
-  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-  z-index: 10;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  z-index: 100;
+  overflow: hidden;
 }
 
 .option {
@@ -52,15 +56,26 @@
 }
 
 .option:hover {
-  background: #f3f4f6;
+  background: rgba(108, 99, 255, 0.16);
 }
 
 .optionText {
-  color: #374151;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .checkIcon {
   width: 16px;
   height: 16px;
-  color: black;
+  color: #a79fff;
+}
+
+.labelStyle {
+  display: block;
+  margin-bottom: 0.75rem;
+  padding-left: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #94a3b8;
 }
