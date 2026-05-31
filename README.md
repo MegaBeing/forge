@@ -1,73 +1,86 @@
-# Konva Flow Canvas — Setup Guide
+# Forge
 
-## 1. Install dependencies
+Forge is a work-in-progress system design visualizer and simulator.
+
+The goal is to make it easy to sketch distributed systems, connect components, configure their capacity, and eventually simulate how traffic moves through the design. Think of it as a canvas for architecture diagrams that can grow into a lightweight performance playground.
+
+## What Forge Is Trying To Build
+
+Most system design tools stop at static diagrams. Forge is meant to go further:
+
+- Draw a system architecture visually.
+- Add infrastructure components like servers, databases, clients, caches, and load balancers.
+- Connect components with straight or curved connectors.
+- Configure component-level resources such as RAM, CPU, storage, network capacity, and task type.
+- Simulate system behavior with metrics such as requests per second, throughput, bottlenecks, latency, queue pressure, and resource utilization.
+
+The simulator is still under active development, but the editor foundation is already in place.
+
+## Current Features
+
+- Infinite-style canvas built with Konva and React Konva.
+- Add and move system components on the canvas.
+- Select, delete, and multi-select nodes.
+- Connect nodes using straight or curved connectors.
+- Zoom controls and grid rendering.
+- Configuration panel for selected nodes.
+- Inline node label editing.
+- Node icon and color customization with Lucide icons.
+- Server configuration form for resource settings.
+
+## Planned Direction
+
+Forge is heading toward an interactive simulation layer where a design can be evaluated, not just drawn.
+
+Planned simulation ideas include:
+
+- Requests per second flowing from clients through the system.
+- Component capacity limits based on configured CPU, RAM, network, and storage.
+- Load balancer queue capacity and rate limits.
+- Cache hit rate effects.
+- Database IOPS and storage pressure.
+- Visual bottleneck indicators on overloaded nodes or connectors.
+- Per-node metrics panels for throughput, dropped requests, latency, and utilization.
+
+## Tech Stack
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Konva / React Konva
+- React Hook Form
+- Zod
+- Lucide React
+
+## Getting Started
+
+Install dependencies:
 
 ```bash
-npm install konva react-konva
+npm install
 ```
 
-> **Note**: `react-konva` requires `konva` as a peer dependency.
+Run the development server:
 
----
-
-## 2. File structure
-
-Place the files in your Next.js project like this:
-
-```
-src/
-  app/
-    canvas/
-      page.tsx          ← canvas-page.tsx (rename)
-  components/
-    FlowCanvas.tsx
-    Toolbar.tsx
-    constants.ts
+```bash
+npm run dev
 ```
 
----
+Build the app:
 
-## 3. Add JetBrains Mono font (optional but recommended)
-
-In your `app/layout.tsx` or `globals.css`:
-
-```css
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+```bash
+npm run build
 ```
 
----
+Run lint:
 
-## 4. Tailwind config
-
-Make sure your `tailwind.config.ts` includes the `src/components` path in `content`:
-
-```ts
-content: [
-  "./src/**/*.{js,ts,jsx,tsx,mdx}",
-]
+```bash
+npm run lint
 ```
 
----
+## Project Status
 
-## 5. Usage
+Forge is early and actively changing. The visual editor is the current focus; the simulation model and metrics engine are the next major pieces.
 
-Navigate to `/canvas` in your app.
-
-### Toolbar actions:
-| Tool | Action |
-|------|--------|
-| ⚙ PROCESS | Click canvas to place a Process node |
-| ◆ DECISION | Click canvas to place a Decision node |
-| ⬡ DATA | Click canvas to place a Data node |
-| → STRAIGHT | Click port → click another port to connect with straight line |
-| ⤳ CURVED | Click port → click another port to connect with bezier curve |
-| ✕ DELETE | Deletes selected node or connector |
-
-### Keyboard shortcuts:
-- `Delete` / `Backspace` — delete selected element
-- `Escape` — cancel current tool / drawing
-
-### Interaction:
-- **Drag** nodes to reposition them (connectors follow automatically)
-- **Click** a node or connector to select it
-- Ports (●) appear on nodes when a connector tool is active
+Expect rough edges, incomplete component types, and evolving configuration schemas while the core interaction model settles.
