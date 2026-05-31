@@ -1,5 +1,5 @@
 "use client";
-import { COMPONENT_TYPES, CONNECTOR_TYPES } from "@/Utils/constants";
+import { DEFAULT_COMPONENT, CONNECTOR_TYPES } from "@/Utils/constants";
 import { NODE_ICONS, CONNECTOR_ICONS } from "./Utils/constants";
 import { ToolbarProps } from "./Utils/types";
 import { NodeType } from "@/Utils/types";
@@ -23,11 +23,10 @@ export default function Toolbar({
     >
       {/* Section label */}
 
-      {COMPONENT_TYPES.map((comp) => (
+
         <button
-          key={comp.id}
-          onClick={() => onSelectTool(comp.id, NodeType.COMPONENT)}
-          title={comp.description}
+          key={DEFAULT_COMPONENT.id}
+          onClick={() => onSelectTool(DEFAULT_COMPONENT.id, NodeType.COMPONENT)}
           style={{
             display: "flex",
             flexDirection: "column",
@@ -35,36 +34,35 @@ export default function Toolbar({
             gap: 2,
             padding: "8px 14px",
             borderRadius: 10,
-            border: selectedTool === comp.id
+            border: selectedTool === DEFAULT_COMPONENT.id
               ? "1px solid rgba(108, 99, 255, 0.7)"
               : "1px solid transparent",
-            background: selectedTool === comp.id
+            background: selectedTool === DEFAULT_COMPONENT.id
               ? "rgba(108, 99, 255, 0.18)"
               : "transparent",
-            color: selectedTool === comp.id ? "#a79fff" : "rgba(255,255,255,0.5)",
+            color: selectedTool === DEFAULT_COMPONENT.id ? "#a79fff" : "rgba(255,255,255,0.5)",
             cursor: "pointer",
             transition: "all 0.15s ease",
-            boxShadow: selectedTool === comp.id
+            boxShadow: selectedTool === DEFAULT_COMPONENT.id
               ? "0 0 12px rgba(108,99,255,0.3), inset 0 1px 0 rgba(255,255,255,0.08)"
               : "none",
           }}
           onMouseEnter={(e) => {
-            if (selectedTool !== comp.id) {
+            if (selectedTool !== DEFAULT_COMPONENT.id) {
               (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)";
               (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.8)";
             }
           }}
           onMouseLeave={(e) => {
-            if (selectedTool !== comp.id) {
+            if (selectedTool !== DEFAULT_COMPONENT.id) {
               (e.currentTarget as HTMLButtonElement).style.background = "transparent";
               (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.5)";
             }
           }}
         >
-          <span style={{ fontSize: 16 }}>{comp.icon}</span>
-          <span style={{ fontSize: 8, letterSpacing: "0.12em", marginTop: 2 }}>{comp.label}</span>
+          <span style={{ fontSize: 16 }}>{DEFAULT_COMPONENT.icon}</span>
+          <span style={{ fontSize: 8, letterSpacing: "0.12em", marginTop: 2 }}>{DEFAULT_COMPONENT.label}</span>
         </button>
-      ))}
 
       {/* Divider */}
       <div

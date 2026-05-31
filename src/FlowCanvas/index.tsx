@@ -4,7 +4,7 @@ import { memo, useRef, useState, useCallback, useEffect, useMemo } from "react";
 import Konva from "konva";
 import { Stage, Layer, Circle, Arrow, Rect } from "react-konva";
 import Toolbar from "../Toolbar";
-import { COMPONENT_TYPES, CONNECTOR_TYPES } from "@/Utils/constants";
+import { DEFAULT_COMPONENT, CONNECTOR_TYPES } from "@/Utils/constants";
 import { Node } from "@/Utils/types";
 import Components from "@/Components";
 import { getPortPosition, buildLinePath } from "./Utils/functions";
@@ -13,6 +13,7 @@ import { NodeType } from "@/Utils/types";
 import TopRightComponents from "@/TopRightComponents";
 import { GridDot, SelectionBox } from "./Utils/types";
 import { MIN_ZOOM, MAX_ZOOM, ZOOM_STEP, GRID_OFFSET, GRID_SPACING } from "@/Toolbar/Utils/constants";
+import ConfigurationPanel from "@/ConfigurationPanel";
 
 const GridLayer = memo(function GridLayer({ dots }: { dots: GridDot[] }) {
   return (
@@ -110,13 +111,13 @@ const useFlowCanvas = () => {
         return;
       }
 
-      if (selectedTool && COMPONENT_TYPES.find((c) => c.id === selectedTool)) {
+      if (selectedTool && DEFAULT_COMPONENT) {
         const stage = e.target.getStage();
         if (!stage) return;
 
         const pos = getCanvasPointerPosition(stage);
         if (!pos) return;
-        const def = COMPONENT_TYPES.find((c) => c.id === selectedTool)!;
+        const def = DEFAULT_COMPONENT;
         const uuid = crypto.randomUUID();
         const newNode: Node = {
           id: `node-${uuid}`,
@@ -128,6 +129,7 @@ const useFlowCanvas = () => {
           width: def.width,
           height: def.height,
           colors: def.colors,
+          configuration: def.configuration
         };
         setNodes((prev) => [...prev, newNode]);
         setSelectedTool(null);
@@ -171,38 +173,41 @@ const useFlowCanvas = () => {
     (nodeId: string, port: "right" | "bottom") => {
       if (selectedTool && CONNECTOR_TYPES.find((c) => c.id === selectedTool)) {
         const style = selectedTool === "connector-curved" ? "curved" : "straight";
-        if (!drawingConnector) {
-          // Start drawing connector
-          const node = nodes.find((n) => n.id === nodeId)!;
-          const portPos = getPortPosition(node, port);
-          const uuid = crypto.randomUUID();
-          setDrawingConnector({
-            id: `conn-${uuid}`,
-            fromNodeId: nodeId,
-            toNodeId: null,
-            fromPort: port,
-            toPort: "left",
-            style,
-            tempEndX: portPos.x,
-            tempEndY: portPos.y,
-          });
-        } else {
-          // Complete connector
-          if (drawingConnector.fromNodeId !== nodeId) {
+        setDrawingConnector((currentConnector) => {
+          if (!currentConnector) {
+            const node = nodes.find((n) => n.id === nodeId);
+            if (!node) return null;
+
+            const portPos = getPortPosition(node, port);
+            const uuid = crypto.randomUUID();
+            return {
+              id: `conn-${uuid}`,
+              fromNodeId: nodeId,
+              toNodeId: null,
+              fromPort: port,
+              toPort: "left",
+              style,
+              tempEndX: portPos.x,
+              tempEndY: portPos.y,
+            };
+          }
+
+          if (currentConnector.fromNodeId !== nodeId) {
             const completed: ConnectorType = {
-              ...drawingConnector,
+              ...currentConnector,
               toNodeId: nodeId,
               toPort: port === "right" ? "left" : "top",
             };
             setConnectors((prev) => [...prev, completed]);
           }
-          setDrawingConnector(null);
+
           setSelectedNodeType(null);
           setSelectedTool(null);
-        }
+          return null;
+        });
       }
     },
-    [selectedTool, drawingConnector, nodes]
+    [nodes, selectedTool]
   );
 
   const handleNodeDragStart = useCallback((id: string) => {
@@ -266,6 +271,10 @@ const useFlowCanvas = () => {
       setSelectedNodeType(null);
   }, [selectedNodeIds, selectedNodeType]);
 
+  const updateNode = (updatedNode: Node) => {
+    console.log({updatedNode})
+    setNodes((prev) => prev.map((n) => n.id === updatedNode.id ? updatedNode : n));
+  };
 
   useEffect(() => {
     function handleResize() {
@@ -278,7 +287,7 @@ const useFlowCanvas = () => {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Delete" || e.key === "Backspace") handleDeleteSelected();
+      if (e.key === "Delete") handleDeleteSelected();
       if (e.key === "Escape") {
         setSelectedTool(null);
         setDrawingConnector(null);
@@ -446,6 +455,7 @@ const useFlowCanvas = () => {
     handleZoomIn,
     handleZoomOut,
     handleResetZoom,
+    updateNode
   }
 }
 
@@ -486,9 +496,10 @@ export default function FlowCanvas() {
     handleZoomIn,
     handleZoomOut,
     handleResetZoom,
+    updateNode
   } = useFlowCanvas();
 
-  const isConnectorTool = selectedNodeType === NodeType.CONNECTOR
+  const isConnectorTool = () => selectedNodeType === NodeType.CONNECTOR;
   const gridDots = useMemo(() => {
     if (!stageSize.width || !stageSize.height) return [];
 
@@ -550,14 +561,7 @@ export default function FlowCanvas() {
       </div>
 
       {/* Configuration panel */}
-      {/* {(
-        <div className="absolute top-5 left-5 bg-white p-4 shadow-lg rounded-lg z-10 flex w-80 h-80 flex-col items-center justify-start">
-          <TextInput/>
-          <Slider/>
-          <Switch/>
-          <Select/>
-        </div>
-      )} */}
+      {selectedNodeIds.length === 1 && <ConfigurationPanel node={nodes.find((n) => n.id === selectedNodeIds[0])!} updateNode={(data: Node) => updateNode(data)} />}
 
       <Stage
         ref={stageRef}
@@ -632,11 +636,10 @@ export default function FlowCanvas() {
             );
           })()}
         </Layer>
-
         <Components
           nodes={nodes}
           selectedNodeIds={selectedNodeIds}
-          isConnectorTool={isConnectorTool}
+          isConnectorTool={isConnectorTool()}
           handleArrowClick={handleArrowClick}
           handleNodeDragStart={handleNodeDragStart}
           handleNodeDrag={handleNodeDrag}

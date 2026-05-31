@@ -1,5 +1,5 @@
 "use client";
-import { JSX, memo, useEffect, useState } from "react";
+import { JSX, memo, useMemo } from "react";
 import { Node, NodeType } from "@/Utils/types";
 import Konva from "konva";
 import { Layer, Group, Rect, Circle, Text, Image as KonvaImage } from "react-konva";
@@ -26,18 +26,14 @@ interface CanvasNodeProps {
   handlePortClick: (nodeId: string, portPosition: "right" | "bottom") => void;
 }
 
-function useSvgIconImage(icon: JSX.Element) {
-  const [img, setImg] = useState<HTMLImageElement | null>(null);
+function createSvgIconImage(icon: JSX.Element) {
+  const svg = renderToStaticMarkup(icon);
+  const dataUrl = "data:image/svg+xml;base64," + btoa(svg);
+  console.log("Generated data URL for SVG icon:", dataUrl); // Debug log to check the generated data URL
+  const image = new window.Image();
+  image.src = dataUrl;
 
-  useEffect(() => {
-    const svg = renderToStaticMarkup(icon);
-    const dataUrl = "data:image/svg+xml;base64," + btoa(svg);
-    const image = new window.Image();
-    image.src = dataUrl;
-    image.onload = () => setImg(image);
-  }, [icon]);
-
-  return img;
+  return image;
 }
 
 const CanvasNode = memo(function CanvasNode({
@@ -52,8 +48,7 @@ const CanvasNode = memo(function CanvasNode({
 }: CanvasNodeProps) {
   const colors = node.colors;
   const showPorts = isConnectorTool;
-  const iconImage = useSvgIconImage(node.icon);
-  console.log(iconImage)
+  const iconImage = useMemo(() => createSvgIconImage(node.icon), [node.icon]);
   return (
     <Group
       x={node.x}
@@ -227,13 +222,18 @@ const CanvasNode = memo(function CanvasNode({
         </>
       )}
     </Group>
-    
+
   );
 }, (prevProps, nextProps) => {
   return (
-    prevProps.node.x == nextProps.node.x &&
-    prevProps.node.y == nextProps.node.y &&
-    prevProps.isSelected == nextProps.isSelected 
+    prevProps.node === nextProps.node &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isConnectorTool === nextProps.isConnectorTool &&
+    prevProps.handleArrowClick === nextProps.handleArrowClick &&
+    prevProps.handleNodeDragStart === nextProps.handleNodeDragStart &&
+    prevProps.handleNodeDrag === nextProps.handleNodeDrag &&
+    prevProps.handleNodeDragEnd === nextProps.handleNodeDragEnd &&
+    prevProps.handlePortClick === nextProps.handlePortClick
   );
 });
 
