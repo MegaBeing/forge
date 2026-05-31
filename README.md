@@ -1,138 +1,86 @@
-# Flow Canvas
+# Forge
 
-A node-based flow canvas built with [Konva.js](https://konvajs.org/) and [Next.js](https://nextjs.org/). Drop components onto the canvas, connect them with straight or curved arrows, drag to reposition, and delete with a keypress.
+Forge is a work-in-progress system design visualizer and simulator.
 
----
+The goal is to make it easy to sketch distributed systems, connect components, configure their capacity, and eventually simulate how traffic moves through the design. Think of it as a canvas for architecture diagrams that can grow into a lightweight performance playground.
 
-## Preview
+## What Forge Is Trying To Build
 
-```
-┌───────────────────────────────────────────────────────────┐
-│  ⚙ PROCESS  ◆ DECISION  ⬡ DATA  │  → STRAIGHT  ⤳ CURVED  │
-└───────────────────────────────────────────────────────────┘
-                     ↑ Toolbar
+Most system design tools stop at static diagrams. Forge is meant to go further:
 
-        ┌───────────┐        ┌───────────┐
-        │ ⚙         │ ──────▶│ ◆         │
-        │  PROCESS  │        │  DECISION │
-        └───────────┘        └───────────┘
-```
+- Draw a system architecture visually.
+- Add infrastructure components like servers, databases, clients, caches, and load balancers.
+- Connect components with straight or curved connectors.
+- Configure component-level resources such as RAM, CPU, storage, network capacity, and task type.
+- Simulate system behavior with metrics such as requests per second, throughput, bottlenecks, latency, queue pressure, and resource utilization.
 
----
+The simulator is still under active development, but the editor foundation is already in place.
+
+## Current Features
+
+- Infinite-style canvas built with Konva and React Konva.
+- Add and move system components on the canvas.
+- Select, delete, and multi-select nodes.
+- Connect nodes using straight or curved connectors.
+- Zoom controls and grid rendering.
+- Configuration panel for selected nodes.
+- Inline node label editing.
+- Node icon and color customization with Lucide icons.
+- Server configuration form for resource settings.
+
+## Planned Direction
+
+Forge is heading toward an interactive simulation layer where a design can be evaluated, not just drawn.
+
+Planned simulation ideas include:
+
+- Requests per second flowing from clients through the system.
+- Component capacity limits based on configured CPU, RAM, network, and storage.
+- Load balancer queue capacity and rate limits.
+- Cache hit rate effects.
+- Database IOPS and storage pressure.
+- Visual bottleneck indicators on overloaded nodes or connectors.
+- Per-node metrics panels for throughput, dropped requests, latency, and utilization.
 
 ## Tech Stack
 
-- **Next.js 14+** (App Router)
-- **React 18**
-- **Konva.js** — 2D canvas rendering
-- **react-konva** — React bindings for Konva
-- **Tailwind CSS** — utility styling
-
----
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Konva / React Konva
+- React Hook Form
+- Zod
+- Lucide React
 
 ## Getting Started
 
-### 1. Install dependencies
+Install dependencies:
 
 ```bash
-npm install konva react-konva
+npm install
 ```
 
-### 2. File structure
-
-```
-src/
-  app/
-    layout.tsx          # Root layout (html + body tags)
-    globals.css         # Global styles + font import
-    canvas/
-      page.tsx          # Canvas route (/canvas)
-  components/
-    FlowCanvas.tsx      # Main canvas component
-    Toolbar.tsx         # Tool selection toolbar
-    constants.ts        # Component & connector definitions
-```
-
-### 3. Run the dev server
+Run the development server:
 
 ```bash
 npm run dev
 ```
 
-Navigate to [http://localhost:3000/canvas](http://localhost:3000/canvas).
+Build the app:
 
----
-
-## Usage
-
-### Placing components
-
-1. Click a component button in the toolbar (**⚙ PROCESS**, **◆ DECISION**, or **⬡ DATA**)
-2. Click anywhere on the canvas to place it
-3. Drag placed nodes to reposition them
-
-### Connecting components
-
-1. Click a connector button (**→ STRAIGHT** or **⤳ CURVED**)
-2. Ports (●) will appear on all nodes
-3. Click a port on the source node to begin drawing
-4. Click a port on the destination node to complete the connection
-
-### Deleting elements
-
-- Click a node or connector to select it (highlighted in amber)
-- Press `Delete` / `Backspace`, or click the **✕ DELETE** button in the toolbar
-
-### Keyboard shortcuts
-
-| Key | Action |
-|-----|--------|
-| `Delete` / `Backspace` | Delete selected element |
-| `Escape` | Cancel active tool / abort in-progress connection |
-
----
-
-## Components
-
-### `FlowCanvas.tsx`
-The root canvas component. Manages all state: nodes, connectors, active tool, selection, and in-progress connector drawing. Renders three Konva layers: dot grid, connectors, and nodes.
-
-### `Toolbar.tsx`
-Floating toolbar centered at the top of the canvas. Highlights the active tool and conditionally shows the delete button when something is selected.
-
-### `constants.ts`
-Defines the available component types (id, label, dimensions) and connector types. Extend this file to add new node or connector variants.
-
----
-
-## Adding New Node Types
-
-In `constants.ts`, add an entry to `COMPONENT_TYPES`:
-
-```ts
-{
-  id: "start",
-  label: "START",
-  width: 140,
-  height: 80,
-  description: "A start/end terminal",
-}
+```bash
+npm run build
 ```
 
-Then add its color config in `FlowCanvas.tsx`:
+Run lint:
 
-```ts
-const NODE_COLORS = {
-  // ...existing entries
-  start: { fill: "#1a1520", stroke: "#e879f9", icon: "◉" },
-};
+```bash
+npm run lint
 ```
 
----
+## Project Status
 
-## Known Limitations
+Forge is early and actively changing. The visual editor is the current focus; the simulation model and metrics engine are the next major pieces.
 
-- No zoom / pan on the canvas (planned)
-- Connectors do not re-route automatically around nodes
-- No undo/redo history
-- State is in-memory only — refreshing the page clears the canvas
+Expect rough edges, incomplete component types, and evolving configuration schemas while the core interaction model settles.
