@@ -1,5 +1,5 @@
 import { InputType } from "@/Utils/types";
-import { ConfigurationType, ServerTaskType } from "../types";
+import { ConfigurationType, ServerTaskType } from "../../Utils/types";
 import { z } from "zod";
 import { IServerConfiguration } from "./types";
 

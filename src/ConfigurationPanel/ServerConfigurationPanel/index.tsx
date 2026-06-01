@@ -1,13 +1,13 @@
 import { useEffect } from "react";
-import { serverConfigurationList } from "./constants";
-import { getConfigurationList } from "../utils";
+import { serverConfigurationList } from "./Utils/constants";
+import { getConfigurationList } from "../Components/getConfigurationList";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { IServerConfiguration } from "./types";
+import { IServerConfiguration } from "./Utils/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getValidationSchema } from "../constants";
-import { ServerTaskType } from "../types";
+import { getValidationSchema } from "../Utils/constants";
+import { ServerTaskType } from "../Utils/types";
 
-export interface IProps {
+interface IProps {
   data: IServerConfiguration;
   onSubmit: (data: IServerConfiguration) => void;
 }

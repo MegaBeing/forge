@@ -41,3 +41,15 @@ export function buildLinePath(
   }
   return [x1, y1, x2, y2];
 }
+
+export function getCursorStyle(isConnectorTool: boolean, selectedTool: string | null) {
+  return () => {
+    return isConnectorTool
+      ? "crosshair"
+      : selectedTool
+        ? "copy"
+        : "default";
+  };
+}
+
+

@@ -1,5 +1,4 @@
-import { ServerTaskType } from "../types";
-
+import { ServerTaskType } from "../../Utils/types";
 
 export interface IServerConfiguration {
   ram: number;

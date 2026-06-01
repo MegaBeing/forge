@@ -56,7 +56,7 @@ const colorOptions = [
   "#fb7185",
 ];
 
-export interface IProps {
+interface IProps {
   icon: React.ReactNode;
   color: string;
   label?: string;

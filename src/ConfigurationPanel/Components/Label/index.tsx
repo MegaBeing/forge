@@ -1,6 +1,6 @@
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
 
-export interface IProps {
+interface IProps {
   value: string;
   fallback?: string;
   className?: string;

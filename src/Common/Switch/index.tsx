@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './index.module.css';
 
-export interface IProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> {
+interface IProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> {
   value?: boolean;
   onChange?: (value: boolean) => void;
 }
