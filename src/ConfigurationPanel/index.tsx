@@ -1,12 +1,12 @@
 import Select from "@/Common/Select";
-import IconColorSelector from "@/Common/IconColorSelector";
-import EditableLabel from "@/Common/EditableLabel";
+import IconColorSelector from "@/ConfigurationPanel/Components/IconSelector";
+import EditableLabel from "@/ConfigurationPanel/Components/Label";
 import { JSX, useEffect, useState } from "react";
 import ServerConfigurationPanel, { DEFAULT_SERVER_CONFIGURATION } from "./ServerConfigurationPanel";
 import { Controller, useForm } from "react-hook-form";
 import { Node } from "@/Utils/types";
-import { IServerConfiguration } from "./ServerConfigurationPanel/types";
-import { ICacheConfiguration, IClientConfiguration, IDatabaseConfiguration, ILoadBalancerConfiguration, ServerTaskType } from "./types";
+import { IServerConfiguration } from "./ServerConfigurationPanel/Utils/types";
+import { ICacheConfiguration, IClientConfiguration, IDatabaseConfiguration, ILoadBalancerConfiguration, ServerTaskType } from "./Utils/types";
 
 export enum ConfigurationPanelType {
   NONE = "NONE",
@@ -21,7 +21,7 @@ export enum ConfigurationPanelType {
 export type PanelSelectType = {
   panelType: ConfigurationPanelType;
 }
-export interface IProps {
+interface IProps {
   node: Node;
   updateNode: (node: Node) => void;
 }

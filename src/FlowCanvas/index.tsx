@@ -1,61 +1,28 @@
 "use client";
 
-import { memo, useRef, useState, useCallback, useEffect, useMemo } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import Konva from "konva";
-import { Stage, Layer, Circle, Arrow, Rect } from "react-konva";
+import { Stage } from "react-konva";
 import Toolbar from "../Toolbar";
 import { DEFAULT_COMPONENT, CONNECTOR_TYPES } from "@/Utils/constants";
 import { Node } from "@/Utils/types";
-import Components from "@/Components";
-import { getPortPosition, buildLinePath } from "./Utils/functions";
+import NodesLayer from "@/FlowCanvas/NodesLayer";
+import { getCursorStyle, getPortPosition } from "./Utils/functions";
+import { getHelperStatements } from "@/TopBar/Utils/functions";
 import { ConnectorType } from "@/Utils/types";
 import { NodeType } from "@/Utils/types";
-import TopRightComponents from "@/TopRightComponents";
-import { GridDot, SelectionBox } from "./Utils/types";
-import { MIN_ZOOM, MAX_ZOOM, ZOOM_STEP, GRID_OFFSET, GRID_SPACING } from "@/Toolbar/Utils/constants";
+import TopRightComponents from "@/TopBar";
+import { SelectionBox, StagePositionType, StageSizeType } from "./Utils/types";
+import { MIN_ZOOM, MAX_ZOOM, ZOOM_STEP } from "@/Toolbar/Utils/constants";
 import ConfigurationPanel from "@/ConfigurationPanel";
-
-const GridLayer = memo(function GridLayer({ dots }: { dots: GridDot[] }) {
-  return (
-    <Layer>
-      {dots.map((dot) => (
-        <Circle
-          key={dot.key}
-          x={dot.x}
-          y={dot.y}
-          radius={1}
-          fill="rgba(175, 172, 172, 0.919)"
-          listening={false}
-        />
-      ))}
-    </Layer>
-  );
-});
-
-const SelectionLayer = memo(function SelectionLayer({ selectionBox }: { selectionBox: SelectionBox | null }) {
-  if (!selectionBox) return null;
-
-  return (
-    <Layer listening={false}>
-      <Rect
-        x={selectionBox.x}
-        y={selectionBox.y}
-        width={selectionBox.width}
-        height={selectionBox.height}
-        fill="rgba(59, 130, 246, 0.18)"
-        stroke="#3b82f6"
-        strokeWidth={1.5}
-        dash={[8, 4]}
-      />
-    </Layer>
-  );
-});
-
+import { GridLayer } from "./GridLayer";
+import { SelectionLayer } from "./SelectionLayer";
+import ConnectorsLayer from "./ConnectorsLayer";
 
 const useFlowCanvas = () => {
   const stageRef = useRef<Konva.Stage>(null);
-  const selectionStartRef = useRef<{ x: number; y: number } | null>(null);
-  const draggedSelectionRef = useRef<Record<string, { x: number; y: number }> | null>(null);
+  const selectionStartRef = useRef<StagePositionType | null>(null);
+  const draggedSelectionRef = useRef<Record<string, StagePositionType> | null>(null);
   const suppressCanvasClickRef = useRef(false);
   const [nodes, setNodes] = useState<Node[]>([]);
   const [connectors, setConnectors] = useState<ConnectorType[]>([]);
@@ -64,9 +31,9 @@ const useFlowCanvas = () => {
   const [selectedNodeType, setSelectedNodeType] = useState<NodeType | null>(null);
   const [drawingConnector, setDrawingConnector] = useState<ConnectorType | null>(null);
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
-  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
+  const [stageSize, setStageSize] = useState<StageSizeType>({ width: 0, height: 0 });
   const [stageScale, setStageScale] = useState(1);
-  const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
+  const [stagePosition, setStagePosition] = useState<StagePositionType>({ x: 0, y: 0 });
 
   const getCanvasPointerPosition = useCallback((stage: Konva.Stage) => {
     const pointer = stage.getPointerPosition();
@@ -80,7 +47,7 @@ const useFlowCanvas = () => {
   }, []);
 
   const zoomStage = useCallback(
-    (nextScale: number, center?: { x: number; y: number }) => {
+    (nextScale: number, center?: StagePositionType) => {
       const stage = stageRef.current;
       if (!stage) return;
 
@@ -117,6 +84,7 @@ const useFlowCanvas = () => {
 
         const pos = getCanvasPointerPosition(stage);
         if (!pos) return;
+
         const def = DEFAULT_COMPONENT;
         const uuid = crypto.randomUUID();
         const newNode: Node = {
@@ -253,7 +221,7 @@ const useFlowCanvas = () => {
   const handleDeleteSelected = useCallback(() => {
     if (selectedNodeIds.length === 0) return;
 
-    switch(selectedNodeType) {
+    switch (selectedNodeType) {
       case NodeType.COMPONENT:
         setNodes((prev) => prev.filter((n) => !selectedNodeIds.includes(n.id)));
         setConnectors((prev) =>
@@ -266,13 +234,12 @@ const useFlowCanvas = () => {
         setConnectors((prev) => prev.filter((c) => !selectedNodeIds.includes(c.id)));
 
         break;
-      }
-      setSelectedNodeIds([]);
-      setSelectedNodeType(null);
+    }
+    setSelectedNodeIds([]);
+    setSelectedNodeType(null);
   }, [selectedNodeIds, selectedNodeType]);
 
   const updateNode = (updatedNode: Node) => {
-    console.log({updatedNode})
     setNodes((prev) => prev.map((n) => n.id === updatedNode.id ? updatedNode : n));
   };
 
@@ -309,25 +276,9 @@ const useFlowCanvas = () => {
     setSelectionBox(null);
   }
 
-  const helperStatements = () => {
-    return isConnectorTool && !drawingConnector
-          ? "Click a port (●) to start connecting"
-          : isConnectorTool && drawingConnector
-            ? "Click another port to complete the connection"
-            : selectedTool
-              ? "Click on canvas to place component"
-              : "Select a tool from the toolbar"
-  }
+  const cursorStyle = getCursorStyle(isConnectorTool, selectedTool)
 
-  const cursorStyle = () => {
-    return isConnectorTool
-            ? "crosshair"
-            : selectedTool
-              ? "copy"
-              : "default"
-  }
-
-  const handleArrowClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>, id: string, nodeType: NodeType ) => {
+  const handleArrowClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>, id: string, nodeType: NodeType) => {
     e.cancelBubble = true;
     setSelectedNodeType(nodeType);
     if (nodeType === NodeType.COMPONENT) {
@@ -422,12 +373,12 @@ const useFlowCanvas = () => {
   return {
     // refs
     stageRef,
-    
+
 
     // states
     nodes,
     connectors,
-    selectedNodeType, 
+    selectedNodeType,
     selectedNodeIds,
     selectedTool,
     stageSize,
@@ -440,7 +391,6 @@ const useFlowCanvas = () => {
     // functions
     selectTool,
     handleDeleteSelected,
-    helperStatements,
     handleNodeInsertion: handleCanvasClick,
     cursorStyle,
     handleMouseMove,
@@ -463,12 +413,12 @@ export default function FlowCanvas() {
   const {
     // refs
     stageRef,
-    
+
 
     // states
     nodes,
     connectors,
-    selectedNodeType, 
+    selectedNodeType,
     selectedNodeIds,
     selectedTool,
     stageSize,
@@ -481,7 +431,6 @@ export default function FlowCanvas() {
     // functions
     selectTool,
     handleDeleteSelected,
-    helperStatements,
     handleNodeInsertion,
     cursorStyle,
     handleMouseMove,
@@ -500,40 +449,15 @@ export default function FlowCanvas() {
   } = useFlowCanvas();
 
   const isConnectorTool = () => selectedNodeType === NodeType.CONNECTOR;
-  const gridDots = useMemo(() => {
-    if (!stageSize.width || !stageSize.height) return [];
-
-    const visibleWidth = stageSize.width / stageScale;
-    const visibleHeight = stageSize.height / stageScale;
-    const worldLeft = -stagePosition.x / stageScale;
-    const worldTop = -stagePosition.y / stageScale;
-    const worldRight = worldLeft + visibleWidth;
-    const worldBottom = worldTop + visibleHeight;
-
-    const startColumn = Math.floor((worldLeft - GRID_OFFSET) / GRID_SPACING) - 1;
-    const endColumn = Math.ceil((worldRight - GRID_OFFSET) / GRID_SPACING) + 1;
-    const startRow = Math.floor((worldTop - GRID_OFFSET) / GRID_SPACING) - 1;
-    const endRow = Math.ceil((worldBottom - GRID_OFFSET) / GRID_SPACING) + 1;
-
-    const dots: GridDot[] = [];
-    for (let row = startRow; row <= endRow; row += 1) {
-      for (let column = startColumn; column <= endColumn; column += 1) {
-        dots.push({
-          key: `dot-${row}-${column}`,
-          x: column * GRID_SPACING + GRID_OFFSET,
-          y: row * GRID_SPACING + GRID_OFFSET,
-        });
-      }
-    }
-
-    return dots;
-  }, [stagePosition.x, stagePosition.y, stageScale, stageSize.height, stageSize.width]);
 
   return (
     <div className="relative w-full h-full select-none">
       {/* TopRightComponents */}
       <TopRightComponents
         zoomLevel={stageScale}
+        isConnectorTool={isConnectorTool()}
+        drawingConnector={drawingConnector}
+        selectedTool={selectedTool}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onResetZoom={handleResetZoom}
@@ -548,20 +472,14 @@ export default function FlowCanvas() {
       />
 
       {/* Canvas cursor hint */}
-      <div
-        className="absolute top-5 left-1/2 -translate-x-1/2 pointer-events-none"
-        style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          color: "rgb(175, 175, 175)",
-          fontSize: 12,
-          letterSpacing: "0.1em",
-        }}
-      >
-        {helperStatements()}
-      </div>
 
       {/* Configuration panel */}
-      {selectedNodeIds.length === 1 && <ConfigurationPanel node={nodes.find((n) => n.id === selectedNodeIds[0])!} updateNode={(data: Node) => updateNode(data)} />}
+      {selectedNodeIds.length === 1 &&
+        <ConfigurationPanel
+          node={nodes.find((n) => n.id === selectedNodeIds[0])!}
+          updateNode={(data: Node) => updateNode(data)}
+        />
+      }
 
       <Stage
         ref={stageRef}
@@ -581,62 +499,27 @@ export default function FlowCanvas() {
         }}
       >
         {/* Grid Layer */}
-        <GridLayer dots={gridDots} />
+        <GridLayer
+          stageSize={stageSize}
+          stageScale={stageScale}
+          stagePosition={stagePosition}
+        />
+
+        {/* Selection Layer */}
         <SelectionLayer selectionBox={selectionBox} />
 
         {/* Connectors Layer */}
-        <Layer>
-          {connectors.map((conn) => {
-            const fromNode = nodes.find((n) => n.id === conn.fromNodeId);
-            const toNode = nodes.find((n) => n.id === conn.toNodeId);
-            if (!fromNode || !toNode) return null;
-            const from = getPortPosition(fromNode, conn.fromPort);
-            const to = getPortPosition(toNode, conn.toPort);
-            const pts = buildLinePath(from.x, from.y, to.x, to.y, conn.style);
-            const isSelected = selectedNodeIds.includes(conn.id) && selectedNodeType === NodeType.CONNECTOR;
-            return (
-              <Arrow
-                key={conn.id}
-                points={pts}
-                stroke={isSelected ? "#f59e0b" : "#6c63ff"}
-                strokeWidth={isSelected ? 3 : 2}
-                fill={isSelected ? "#f59e0b" : "#6c63ff"}
-                pointerLength={10}
-                pointerWidth={8}
-                tension={0}
-                onClick={(e) => handleArrowClick(e, conn.id, NodeType.CONNECTOR)}
-                shadowColor={isSelected ? "#f59e0b" : "#6c63ff"}
-                shadowBlur={isSelected ? 12 : 6}
-                shadowOpacity={0.5}
-              />
-            );
-          })}
+        <ConnectorsLayer
+          connectors={connectors}
+          nodes={nodes}
+          selectedNodeIds={selectedNodeIds}
+          selectedNodeType={selectedNodeType}
+          drawingConnector={drawingConnector}
+          handleArrowClick={handleArrowClick}
+        />
 
-          {/* In-progress connector */}
-          {drawingConnector && drawingConnector.tempEndX !== undefined && (() => {
-            const fromNode = nodes.find((n) => n.id === drawingConnector.fromNodeId);
-            if (!fromNode) return null;
-            const from = getPortPosition(fromNode, drawingConnector.fromPort);
-            const pts = buildLinePath(
-              from.x, from.y,
-              drawingConnector.tempEndX!, drawingConnector.tempEndY!,
-              drawingConnector.style
-            );
-            return (
-              <Arrow
-                points={pts}
-                stroke="rgba(108,99,255,0.5)"
-                strokeWidth={2}
-                fill="rgba(108,99,255,0.5)"
-                pointerLength={8}
-                pointerWidth={7}
-                dash={[6, 4]}
-                listening={false}
-              />
-            );
-          })()}
-        </Layer>
-        <Components
+        {/* Nodes Layer */}
+        <NodesLayer
           nodes={nodes}
           selectedNodeIds={selectedNodeIds}
           isConnectorTool={isConnectorTool()}

@@ -1,52 +1,42 @@
-import { Node } from "@/Utils/types";
+import { createSvgIconImage } from "@/Utils/functions";
+import { Node, NodeType } from "@/Utils/types";
 import Konva from "konva";
-import { Group, Rect, Circle, Text } from "react-konva";
+import { memo, useMemo } from "react";
+import { Group, Rect, Image as KonvaImage, Text, Circle } from "react-konva";
 
 interface IProps {
   node: Node;
-  isConnectorTool: boolean;
   isSelected: boolean;
-  colors: {
-    fill: string;
-    stroke: string;
-    icon: string;
-  };
+  isConnectorTool: boolean;
+  handleArrowClick: (e: Konva.KonvaEventObject<MouseEvent>, id: string, nodeType: NodeType) => void;
+  handleNodeDragStart: (id: string) => void;
   handleNodeDrag: (id: string, x: number, y: number) => void;
-  setSelectedNodeId: (id: string | null) => void;
-  setSelectedConnectorId: (id: string | null) => void;
+  handleNodeDragEnd: () => void;
   handlePortClick: (nodeId: string, portPosition: "right" | "bottom") => void;
-  showPorts: boolean;
 }
 
-export default function SingleComponent({
-  node,
-  isConnectorTool,
-  isSelected,
-  colors,
-  handleNodeDrag,
-  setSelectedNodeId,
-  setSelectedConnectorId,
-  handlePortClick,
-  showPorts,
+export const CanvasNode = memo(function CanvasNode({
+  node, isSelected, isConnectorTool, handleArrowClick, handleNodeDragStart, handleNodeDrag, handleNodeDragEnd, handlePortClick,
 }: IProps) {
+  const colors = node.colors;
+  const showPorts = isConnectorTool;
+  const iconImage = useMemo(() => createSvgIconImage(node.icon), [node.icon]);
   return (
     <Group
-      key={node.id}
       x={node.x}
       y={node.y}
       draggable={!isConnectorTool}
+      onDragStart={() => {
+        handleNodeDragStart(node.id);
+      } }
       onDragMove={(e) => {
         handleNodeDrag(node.id, e.target.x(), e.target.y());
-      }}
-      onClick={(e) => {
-        e.cancelBubble = true;
-        if (!isConnectorTool) {
-          setSelectedNodeId(node.id);
-          setSelectedConnectorId(null);
-        }
-      }}
+      } }
+      onDragEnd={() => {
+        handleNodeDragEnd();
+      } }
+      onClick={(e) => handleArrowClick(e, node.id, NodeType.COMPONENT)}
     >
-      {/* Glow */}
       {isSelected && (
         <Rect
           x={-4}
@@ -60,11 +50,9 @@ export default function SingleComponent({
           shadowColor={colors.stroke}
           shadowBlur={20}
           shadowOpacity={0.8}
-          listening={false}
-        />
+          listening={false} />
       )}
 
-      {/* Body */}
       <Rect
         width={node.width}
         height={node.height}
@@ -74,10 +62,8 @@ export default function SingleComponent({
         strokeWidth={isSelected ? 2 : 1}
         shadowColor={colors.stroke}
         shadowBlur={isSelected ? 16 : 8}
-        shadowOpacity={isSelected ? 0.5 : 0.2}
-      />
+        shadowOpacity={isSelected ? 0.5 : 0.2} />
 
-      {/* Top accent bar */}
       <Rect
         x={10}
         y={0}
@@ -86,22 +72,17 @@ export default function SingleComponent({
         cornerRadius={[0, 0, 3, 3]}
         fill={colors.stroke}
         opacity={0.8}
-        listening={false}
-      />
+        listening={false} />
 
-      {/* Icon */}
-      <Text
-        x={0}
-        y={12}
-        width={node.width}
-        text={colors.icon}
-        fontSize={20}
-        align="center"
-        fill={colors.stroke}
-        listening={false}
-      />
+      {iconImage &&
+        <KonvaImage
+          x={(node.width - 24) / 2}
+          y={(node.height - 24) / 3}
+          image={iconImage}
+          width={24}
+          height={24}
+          listening={false} />}
 
-      {/* Label */}
       <Text
         x={0}
         y={node.height - 28}
@@ -113,13 +94,10 @@ export default function SingleComponent({
         fill="rgba(255,255,255,0.7)"
         align="center"
         letterSpacing={1}
-        listening={false}
-      />
+        listening={false} />
 
-      {/* Ports (shown when connector tool active) */}
       {showPorts && (
         <>
-          {/* Right port */}
           <Circle
             x={node.width}
             y={node.height / 2}
@@ -132,17 +110,15 @@ export default function SingleComponent({
             onClick={(e) => {
               e.cancelBubble = true;
               handlePortClick(node.id, "right");
-            }}
+            } }
             onMouseEnter={(e) => {
               (e.target as Konva.Circle).radius(9);
               (e.target as Konva.Circle).getLayer()?.batchDraw();
-            }}
+            } }
             onMouseLeave={(e) => {
               (e.target as Konva.Circle).radius(7);
               (e.target as Konva.Circle).getLayer()?.batchDraw();
-            }}
-          />
-          {/* Bottom port */}
+            } } />
           <Circle
             x={node.width / 2}
             y={node.height}
@@ -155,17 +131,15 @@ export default function SingleComponent({
             onClick={(e) => {
               e.cancelBubble = true;
               handlePortClick(node.id, "bottom");
-            }}
+            } }
             onMouseEnter={(e) => {
               (e.target as Konva.Circle).radius(9);
               (e.target as Konva.Circle).getLayer()?.batchDraw();
-            }}
+            } }
             onMouseLeave={(e) => {
               (e.target as Konva.Circle).radius(7);
               (e.target as Konva.Circle).getLayer()?.batchDraw();
-            }}
-          />
-          {/* Right port */}
+            } } />
           <Circle
             x={0}
             y={node.height / 2}
@@ -178,17 +152,15 @@ export default function SingleComponent({
             onClick={(e) => {
               e.cancelBubble = true;
               handlePortClick(node.id, "right");
-            }}
+            } }
             onMouseEnter={(e) => {
               (e.target as Konva.Circle).radius(9);
               (e.target as Konva.Circle).getLayer()?.batchDraw();
-            }}
+            } }
             onMouseLeave={(e) => {
               (e.target as Konva.Circle).radius(7);
               (e.target as Konva.Circle).getLayer()?.batchDraw();
-            }}
-          />
-          {/* Bottom port */}
+            } } />
           <Circle
             x={node.width / 2}
             y={0}
@@ -201,18 +173,30 @@ export default function SingleComponent({
             onClick={(e) => {
               e.cancelBubble = true;
               handlePortClick(node.id, "bottom");
-            }}
+            } }
             onMouseEnter={(e) => {
               (e.target as Konva.Circle).radius(9);
               (e.target as Konva.Circle).getLayer()?.batchDraw();
-            }}
+            } }
             onMouseLeave={(e) => {
               (e.target as Konva.Circle).radius(7);
               (e.target as Konva.Circle).getLayer()?.batchDraw();
-            }}
-          />
+            } } />
         </>
       )}
     </Group>
+
   );
-}
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.node === nextProps.node &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isConnectorTool === nextProps.isConnectorTool &&
+    prevProps.handleArrowClick === nextProps.handleArrowClick &&
+    prevProps.handleNodeDragStart === nextProps.handleNodeDragStart &&
+    prevProps.handleNodeDrag === nextProps.handleNodeDrag &&
+    prevProps.handleNodeDragEnd === nextProps.handleNodeDragEnd &&
+    prevProps.handlePortClick === nextProps.handlePortClick
+  );
+});
+

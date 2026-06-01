@@ -3,7 +3,7 @@ import Slider from "@/Common/Slider"
 import Switch from "@/Common/Switch"
 import { TextInput } from "@/Common/TextInput"
 import { InputType } from "@/Utils/types"
-import { ConfigurationType } from "./types"
+import { ConfigurationType } from "../Utils/types"
 import { Control, Controller, FieldValues } from "react-hook-form"
 
 export const getConfigurationList = <TFormValues extends FieldValues>(

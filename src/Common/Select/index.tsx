@@ -37,7 +37,7 @@ function CheckIcon({ className = "" }) {
   );
 }
 
-export interface IProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "onSelect" | "type" | "value"> {
+interface IProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "onSelect" | "type" | "value"> {
   options?: Option[];
   label?: string;
   onChange?: (value: Option["value"]) => void;
