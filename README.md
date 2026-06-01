@@ -1,4 +1,5 @@
 # Forge
+<img width="2549" height="1315" alt="Forge" src="https://github.com/user-attachments/assets/20741947-8f58-413d-bee3-949fe4c0eeb0" />
 
 Forge is a work-in-progress system design visualizer and simulator.
 
