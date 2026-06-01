@@ -8,7 +8,7 @@ export const DEFAULT_COMPONENT: Node = {
   width: 140,
   height: 80,
   icon: <Puzzle size={16} color="#4ade80" />,
-  colors: { fill: "#1a2a1a", stroke: "#4ade80" },
+  colors: { fill: "#4ade8033", stroke: "#4ade80" },
   x: 0,
   y: 0,
   type: "",

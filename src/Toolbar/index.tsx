@@ -3,6 +3,7 @@ import { DEFAULT_COMPONENT, CONNECTOR_TYPES } from "@/Utils/constants";
 import { NODE_ICONS, CONNECTOR_ICONS } from "./Utils/constants";
 import { ToolbarProps } from "./Utils/types";
 import { NodeType } from "@/Utils/types";
+import { Trash } from "lucide-react";
 
 export default function Toolbar({ 
   selectedTool, 
@@ -146,7 +147,9 @@ export default function Toolbar({
               transition: "all 0.15s ease",
             }}
           >
-            <span style={{ fontSize: 14 }}>✕</span>
+            <span style={{ fontSize: 14 }}>
+              <Trash size={14}/>
+            </span>
             <span style={{ fontSize: 8, letterSpacing: "0.12em" }}>DELETE</span>
           </button>
         </>

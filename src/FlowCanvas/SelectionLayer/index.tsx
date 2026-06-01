@@ -12,10 +12,10 @@ export const SelectionLayer = memo(function SelectionLayer({ selectionBox }: { s
         y={selectionBox.y}
         width={selectionBox.width}
         height={selectionBox.height}
-        fill="rgba(59, 130, 246, 0.18)"
-        stroke="#3b82f6"
+        fill="#7d3bf633"
+        stroke="#7d3bf6"
         strokeWidth={1.5}
-        dash={[8, 4]} />
+      />
     </Layer>
   );
 });
