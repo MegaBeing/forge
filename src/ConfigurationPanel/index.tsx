@@ -6,7 +6,9 @@ import ServerConfigurationPanel, { DEFAULT_SERVER_CONFIGURATION } from "./Server
 import { Controller, useForm } from "react-hook-form";
 import { Node } from "@/Utils/types";
 import { IServerConfiguration } from "./ServerConfigurationPanel/Utils/types";
-import { ICacheConfiguration, IClientConfiguration, IDatabaseConfiguration, ILoadBalancerConfiguration, ServerTaskType } from "./Utils/types";
+import { ICacheConfiguration, IClientConfiguration, ILoadBalancerConfiguration, ServerTaskType } from "./Utils/types";
+import { IDatabaseConfiguration } from "./DatabaseConfigurationPanel/Utils/types";
+import DatabaseConfigurationPanel, { DEFAULT_DATABASE_CONFIGURATION } from "./DatabaseConfigurationPanel";
 
 export enum ConfigurationPanelType {
   NONE = "NONE",
@@ -63,6 +65,15 @@ export default function ConfigurationPanel({ node, updateNode }: IProps) {
           taskType: getServerTaskType(),
         }
         return <ServerConfigurationPanel data={data} onSubmit={(data: IServerConfiguration) => onSubmit(ConfigurationPanelType.SERVER, data)} />;
+      case ConfigurationPanelType.DATABASE:
+        const databaseData = {
+          ram: node.configuration.data.ram ?? DEFAULT_SERVER_CONFIGURATION.ram,
+          cpu: node.configuration.data.cpu ?? DEFAULT_SERVER_CONFIGURATION.cpu,
+          storage: node.configuration.data.storage ?? DEFAULT_SERVER_CONFIGURATION.storage,
+          iops: node.configuration.data.iops ?? DEFAULT_DATABASE_CONFIGURATION.iops,
+        }
+        return <DatabaseConfigurationPanel data={databaseData} onSubmit={(data: IDatabaseConfiguration) => onSubmit(ConfigurationPanelType.DATABASE, data)} />;
+      // case ConfigurationPanelType.CLIENT:
       default:
         return <></>;
     }
@@ -87,6 +98,18 @@ export default function ConfigurationPanel({ node, updateNode }: IProps) {
         break;
       }
       case ConfigurationPanelType.DATABASE: {
+        const databaseData = data as IDatabaseConfiguration;
+        console.log("Database Configuration Data:", databaseData);
+        updateNode({
+          ...node,
+          configuration: {
+            type: ConfigurationPanelType.SERVER,
+            data: {
+              ...node.configuration.data,
+              ...databaseData
+            }
+          }
+        })
         // handle database config
         break;
       }

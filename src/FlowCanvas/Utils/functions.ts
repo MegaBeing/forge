@@ -1,6 +1,6 @@
-import { Node } from "@/Utils/types";
+import { Node, PortPosition } from "@/Utils/types";
 
-export function getPortPosition(node: Node, port: string) {
+export function getPortPosition(node: Node, port: PortPosition) {
   switch (port) {
     case "right":
       return { x: node.x + node.width, y: node.y + node.height / 2 };
@@ -51,5 +51,4 @@ export function getCursorStyle(isConnectorTool: boolean, selectedTool: string | 
         : "default";
   };
 }
-
 

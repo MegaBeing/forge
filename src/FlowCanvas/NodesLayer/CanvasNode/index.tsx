@@ -1,5 +1,5 @@
 import { createSvgIconImage } from "@/Utils/functions";
-import { Node, NodeType } from "@/Utils/types";
+import { Node, NodeType, PortPosition } from "@/Utils/types";
 import Konva from "konva";
 import { memo, useMemo } from "react";
 import { Group, Rect, Image as KonvaImage, Text, Circle } from "react-konva";
@@ -8,19 +8,44 @@ interface IProps {
   node: Node;
   isSelected: boolean;
   isConnectorTool: boolean;
+  visiblePort: PortPosition | null;
   handleArrowClick: (e: Konva.KonvaEventObject<MouseEvent>, id: string, nodeType: NodeType) => void;
   handleNodeDragStart: (id: string) => void;
   handleNodeDrag: (id: string, x: number, y: number) => void;
   handleNodeDragEnd: () => void;
-  handlePortClick: (nodeId: string, portPosition: "right" | "bottom") => void;
+  handlePortClick: (nodeId: string, portPosition: PortPosition) => void;
 }
 
 export const CanvasNode = memo(function CanvasNode({
-  node, isSelected, isConnectorTool, handleArrowClick, handleNodeDragStart, handleNodeDrag, handleNodeDragEnd, handlePortClick,
+  node, isSelected, isConnectorTool, visiblePort, handleArrowClick, handleNodeDragStart, handleNodeDrag, handleNodeDragEnd, handlePortClick,
 }: IProps) {
   const colors = node.colors;
-  const showPorts = isConnectorTool;
   const iconImage = useMemo(() => createSvgIconImage(node.icon), [node.icon]);
+  const renderPort = (port: PortPosition, x: number, y: number) => (
+    <Circle
+      x={x}
+      y={y}
+      radius={7}
+      fill={colors.stroke}
+      stroke="#fff"
+      strokeWidth={1.5}
+      shadowColor={colors.stroke}
+      shadowBlur={10}
+      onClick={(e) => {
+        e.cancelBubble = true;
+        handlePortClick(node.id, port);
+      }}
+      onMouseEnter={(e) => {
+        (e.target as Konva.Circle).radius(9);
+        (e.target as Konva.Circle).getLayer()?.batchDraw();
+      }}
+      onMouseLeave={(e) => {
+        (e.target as Konva.Circle).radius(7);
+        (e.target as Konva.Circle).getLayer()?.batchDraw();
+      }}
+    />
+  );
+
   return (
     <Group
       x={node.x}
@@ -96,92 +121,12 @@ export const CanvasNode = memo(function CanvasNode({
         letterSpacing={1}
         listening={false} />
 
-      {showPorts && (
+      {isConnectorTool && visiblePort && (
         <>
-          <Circle
-            x={node.width}
-            y={node.height / 2}
-            radius={7}
-            fill={colors.stroke}
-            stroke="#fff"
-            strokeWidth={1.5}
-            shadowColor={colors.stroke}
-            shadowBlur={10}
-            onClick={(e) => {
-              e.cancelBubble = true;
-              handlePortClick(node.id, "right");
-            } }
-            onMouseEnter={(e) => {
-              (e.target as Konva.Circle).radius(9);
-              (e.target as Konva.Circle).getLayer()?.batchDraw();
-            } }
-            onMouseLeave={(e) => {
-              (e.target as Konva.Circle).radius(7);
-              (e.target as Konva.Circle).getLayer()?.batchDraw();
-            } } />
-          <Circle
-            x={node.width / 2}
-            y={node.height}
-            radius={7}
-            fill={colors.stroke}
-            stroke="#fff"
-            strokeWidth={1.5}
-            shadowColor={colors.stroke}
-            shadowBlur={10}
-            onClick={(e) => {
-              e.cancelBubble = true;
-              handlePortClick(node.id, "bottom");
-            } }
-            onMouseEnter={(e) => {
-              (e.target as Konva.Circle).radius(9);
-              (e.target as Konva.Circle).getLayer()?.batchDraw();
-            } }
-            onMouseLeave={(e) => {
-              (e.target as Konva.Circle).radius(7);
-              (e.target as Konva.Circle).getLayer()?.batchDraw();
-            } } />
-          <Circle
-            x={0}
-            y={node.height / 2}
-            radius={7}
-            fill={colors.stroke}
-            stroke="#fff"
-            strokeWidth={1.5}
-            shadowColor={colors.stroke}
-            shadowBlur={10}
-            onClick={(e) => {
-              e.cancelBubble = true;
-              handlePortClick(node.id, "right");
-            } }
-            onMouseEnter={(e) => {
-              (e.target as Konva.Circle).radius(9);
-              (e.target as Konva.Circle).getLayer()?.batchDraw();
-            } }
-            onMouseLeave={(e) => {
-              (e.target as Konva.Circle).radius(7);
-              (e.target as Konva.Circle).getLayer()?.batchDraw();
-            } } />
-          <Circle
-            x={node.width / 2}
-            y={0}
-            radius={7}
-            fill={colors.stroke}
-            stroke="#fff"
-            strokeWidth={1.5}
-            shadowColor={colors.stroke}
-            shadowBlur={10}
-            onClick={(e) => {
-              e.cancelBubble = true;
-              handlePortClick(node.id, "bottom");
-            } }
-            onMouseEnter={(e) => {
-              (e.target as Konva.Circle).radius(9);
-              (e.target as Konva.Circle).getLayer()?.batchDraw();
-            } }
-            onMouseLeave={(e) => {
-              (e.target as Konva.Circle).radius(7);
-              (e.target as Konva.Circle).getLayer()?.batchDraw();
-            } } />
+          {visiblePort === "right" && renderPort("right", node.width, node.height / 2)}
+          {visiblePort === "bottom" && renderPort("bottom", node.width / 2, node.height)}
+          {visiblePort === "left" && renderPort("left", 0, node.height / 2)}
+          {visiblePort === "top" && renderPort("top", node.width / 2, 0)}
         </>
       )}
     </Group>
@@ -192,6 +137,7 @@ export const CanvasNode = memo(function CanvasNode({
     prevProps.node === nextProps.node &&
     prevProps.isSelected === nextProps.isSelected &&
     prevProps.isConnectorTool === nextProps.isConnectorTool &&
+    prevProps.visiblePort === nextProps.visiblePort &&
     prevProps.handleArrowClick === nextProps.handleArrowClick &&
     prevProps.handleNodeDragStart === nextProps.handleNodeDragStart &&
     prevProps.handleNodeDrag === nextProps.handleNodeDrag &&
@@ -199,4 +145,3 @@ export const CanvasNode = memo(function CanvasNode({
     prevProps.handlePortClick === nextProps.handlePortClick
   );
 });
-

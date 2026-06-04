@@ -5,10 +5,9 @@ import Konva from "konva";
 import { Stage } from "react-konva";
 import Toolbar from "../Toolbar";
 import { DEFAULT_COMPONENT, CONNECTOR_TYPES } from "@/Utils/constants";
-import { Node } from "@/Utils/types";
+import { Node, PortPosition } from "@/Utils/types";
 import NodesLayer from "@/FlowCanvas/NodesLayer";
 import { getCursorStyle, getPortPosition } from "./Utils/functions";
-import { getHelperStatements } from "@/TopBar/Utils/functions";
 import { ConnectorType } from "@/Utils/types";
 import { NodeType } from "@/Utils/types";
 import TopRightComponents from "@/TopBar";
@@ -18,6 +17,14 @@ import ConfigurationPanel from "@/ConfigurationPanel";
 import { GridLayer } from "./GridLayer";
 import { SelectionLayer } from "./SelectionLayer";
 import ConnectorsLayer from "./ConnectorsLayer";
+
+const PORT_PROXIMITY_PX = 28;
+const PORTS: PortPosition[] = ["right", "bottom", "left", "top"];
+
+type ActivePort = {
+  nodeId: string;
+  port: PortPosition;
+};
 
 const useFlowCanvas = () => {
   const stageRef = useRef<Konva.Stage>(null);
@@ -30,6 +37,7 @@ const useFlowCanvas = () => {
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [selectedNodeType, setSelectedNodeType] = useState<NodeType | null>(null);
   const [drawingConnector, setDrawingConnector] = useState<ConnectorType | null>(null);
+  const [activePort, setActivePort] = useState<ActivePort | null>(null);
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
   const [stageSize, setStageSize] = useState<StageSizeType>({ width: 0, height: 0 });
   const [stageScale, setStageScale] = useState(1);
@@ -70,6 +78,35 @@ const useFlowCanvas = () => {
     },
     [clampScale, stagePosition.x, stagePosition.y, stageScale, stageSize.height, stageSize.width]
   );
+
+  const isComponentToolSelected = selectedTool === DEFAULT_COMPONENT.id;
+  const isConnectorToolSelected = Boolean(
+    selectedTool && CONNECTOR_TYPES.some((connector) => connector.id === selectedTool)
+  );
+
+  const getNearestPort = useCallback(
+    (position: StagePositionType) => {
+      const proximity = PORT_PROXIMITY_PX / stageScale;
+      let nearestPort: ActivePort | null = null;
+      let nearestDistance = proximity;
+
+      nodes.forEach((node) => {
+        PORTS.forEach((port) => {
+          const portPosition = getPortPosition(node, port);
+          const distance = Math.hypot(position.x - portPosition.x, position.y - portPosition.y);
+
+          if (distance <= nearestDistance) {
+            nearestDistance = distance;
+            nearestPort = { nodeId: node.id, port };
+          }
+        });
+      });
+
+      return nearestPort;
+    },
+    [nodes, stageScale]
+  );
+
   // Place a node on canvas click when a component tool is active
   const handleCanvasClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -78,7 +115,7 @@ const useFlowCanvas = () => {
         return;
       }
 
-      if (selectedTool && DEFAULT_COMPONENT) {
+      if (isComponentToolSelected && DEFAULT_COMPONENT) {
         const stage = e.target.getStage();
         if (!stage) return;
 
@@ -102,12 +139,13 @@ const useFlowCanvas = () => {
         setNodes((prev) => [...prev, newNode]);
         setSelectedTool(null);
         setSelectedNodeIds([]);
+        setSelectedNodeType(null);
       } else {
         setSelectedNodeIds([]);
         setSelectedNodeType(null);
       }
     },
-    [getCanvasPointerPosition, selectedTool]
+    [getCanvasPointerPosition, isComponentToolSelected, selectedTool]
   );
 
   const handleMouseMove = useCallback(
@@ -117,6 +155,8 @@ const useFlowCanvas = () => {
 
       const pos = getCanvasPointerPosition(stage);
       if (!pos) return;
+
+      setActivePort(isConnectorToolSelected ? getNearestPort(pos) : null);
 
       if (selectionStartRef.current) {
         const start = selectionStartRef.current;
@@ -134,12 +174,12 @@ const useFlowCanvas = () => {
         );
       }
     },
-    [drawingConnector, getCanvasPointerPosition]
+    [drawingConnector, getCanvasPointerPosition, getNearestPort, isConnectorToolSelected]
   );
 
   const handlePortClick = useCallback(
-    (nodeId: string, port: "right" | "bottom") => {
-      if (selectedTool && CONNECTOR_TYPES.find((c) => c.id === selectedTool)) {
+    (nodeId: string, port: PortPosition) => {
+      if (isConnectorToolSelected) {
         const style = selectedTool === "connector-curved" ? "curved" : "straight";
         setDrawingConnector((currentConnector) => {
           if (!currentConnector) {
@@ -153,7 +193,7 @@ const useFlowCanvas = () => {
               fromNodeId: nodeId,
               toNodeId: null,
               fromPort: port,
-              toPort: "left",
+              toPort: port,
               style,
               tempEndX: portPos.x,
               tempEndY: portPos.y,
@@ -161,21 +201,24 @@ const useFlowCanvas = () => {
           }
 
           if (currentConnector.fromNodeId !== nodeId) {
+            const uuid = crypto.randomUUID();
             const completed: ConnectorType = {
               ...currentConnector,
+              id: `conn-${uuid}`,
               toNodeId: nodeId,
-              toPort: port === "right" ? "left" : "top",
+              toPort: port,
             };
             setConnectors((prev) => [...prev, completed]);
           }
 
           setSelectedNodeType(null);
           setSelectedTool(null);
+          setActivePort(null);
           return null;
         });
       }
     },
-    [nodes, selectedTool]
+    [isConnectorToolSelected, nodes, selectedTool]
   );
 
   const handleNodeDragStart = useCallback((id: string) => {
@@ -258,6 +301,7 @@ const useFlowCanvas = () => {
       if (e.key === "Escape") {
         setSelectedTool(null);
         setDrawingConnector(null);
+        setActivePort(null);
         setSelectionBox(null);
         selectionStartRef.current = null;
       }
@@ -266,17 +310,16 @@ const useFlowCanvas = () => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [handleDeleteSelected]);
 
-  //TODO: there should ideally be a function where we can create a list of config for a particular node
-  const isConnectorTool = selectedNodeType === NodeType.CONNECTOR
-
   const selectTool = (id: string, nodeType: NodeType) => {
-    setSelectedTool((prev) => (prev === id ? null : id));
-    setSelectedNodeType(nodeType);
+    const nextTool = selectedTool === id ? null : id;
+    setSelectedTool(nextTool);
+    setSelectedNodeType(nextTool ? nodeType : null);
     setDrawingConnector(null);
     setSelectionBox(null);
+    setActivePort(null);
   }
 
-  const cursorStyle = getCursorStyle(isConnectorTool, selectedTool)
+  const cursorStyle = getCursorStyle(isConnectorToolSelected, selectedTool)
 
   const handleArrowClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>, id: string, nodeType: NodeType) => {
     e.cancelBubble = true;
@@ -381,8 +424,10 @@ const useFlowCanvas = () => {
     selectedNodeType,
     selectedNodeIds,
     selectedTool,
+    isConnectorToolSelected,
     stageSize,
     drawingConnector,
+    activePort,
     selectionBox,
     stageScale,
     stagePosition,
@@ -421,8 +466,10 @@ export default function FlowCanvas() {
     selectedNodeType,
     selectedNodeIds,
     selectedTool,
+    isConnectorToolSelected,
     stageSize,
     drawingConnector,
+    activePort,
     selectionBox,
     stageScale,
     stagePosition,
@@ -448,14 +495,12 @@ export default function FlowCanvas() {
     updateNode
   } = useFlowCanvas();
 
-  const isConnectorTool = () => selectedNodeType === NodeType.CONNECTOR;
-
   return (
     <div className="relative w-full h-full select-none">
       {/* TopRightComponents */}
       <TopRightComponents
         zoomLevel={stageScale}
-        isConnectorTool={isConnectorTool()}
+        isConnectorTool={isConnectorToolSelected}
         drawingConnector={drawingConnector}
         selectedTool={selectedTool}
         onZoomIn={handleZoomIn}
@@ -522,7 +567,8 @@ export default function FlowCanvas() {
         <NodesLayer
           nodes={nodes}
           selectedNodeIds={selectedNodeIds}
-          isConnectorTool={isConnectorTool()}
+          isConnectorTool={isConnectorToolSelected}
+          activePort={activePort}
           handleArrowClick={handleArrowClick}
           handleNodeDragStart={handleNodeDragStart}
           handleNodeDrag={handleNodeDrag}
