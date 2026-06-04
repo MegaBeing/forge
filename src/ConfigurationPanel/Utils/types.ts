@@ -17,13 +17,6 @@ export enum ServerTaskType {
   VERY_HEAVY = "VERY_HEAVY"
 }
 
-export interface IDatabaseConfiguration {
-  ram: number;
-  cpu: number;
-  storage: number;
-  iops: number;
-}
-
 export interface IClientConfiguration { 
   requestTypeCombination: number;
   requestPerSecond: number;

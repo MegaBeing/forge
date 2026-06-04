@@ -36,13 +36,15 @@ export type ConnectorType = {
   id: string;
   fromNodeId: string;
   toNodeId: string | null;
-  fromPort: "right" | "bottom";
-  toPort: "left" | "top";
+  fromPort: PortPosition;
+  toPort: PortPosition;
   style: "straight" | "curved";
   // For in-progress connectors
   tempEndX?: number;
   tempEndY?: number;
 };
+
+export type PortPosition = "right" | "bottom" | "left" | "top";
 
 export enum NodeType {
   COMPONENT = "COMPONENT",
@@ -55,6 +57,5 @@ export enum InputType {
   SWITCH = "SWITCH",
   SLIDER = "SLIDER"
 }
-
 
 
